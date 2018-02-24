@@ -10,8 +10,6 @@ const yoff = height/6
 const xoff = (width - svgSize)/2
 const xpos = xoff
 export default class App extends React.Component {
-    // state = {
-    // };
     constructor () {
         super();
         console.log("ypos " + ypos)
@@ -26,9 +24,6 @@ export default class App extends React.Component {
             cy: [],
             cnt: 412,
             showMaster: false,
-        // position: {
-        //     x: ( width) - 100, y: (height) - 100,
-//        },
             svg1: <Svg width={svgSize} height={svgSize} viewBox={"0 0 " + svgSize + " " + svgSize}/>,
             svgMaster: <Svg width={svgSize} height={svgSize} viewBox={"0 0 " + svgSize + " " + svgSize}>
                 <G scale={svgSize/109}>
@@ -71,7 +66,6 @@ export default class App extends React.Component {
             </Svg>
     };
         this._handlePanResponderMove = this._handlePanResponderMove.bind(this)
-//        this._handlePanResponderRelease = this._handlePanResponderRelease.bind(this)
 
     }
     componentWillMount () {
@@ -88,8 +82,6 @@ export default class App extends React.Component {
         let x = gestureState.moveX
         let y = gestureState.moveY
 
-        //let p = this.state.svg.createSVGPoint //this.state.position.x, this.state.position.y);
-
         let ps = this.state.ps;
         let cx = this.state.cx;
         let cy = this.state.cy;
@@ -105,19 +97,14 @@ export default class App extends React.Component {
 
         let l1 = null;
         if (cx.length > 1) {
-            //let start = ps[0];
             let lcs = "M" + (cx[0]) + "," + (cy[0]);
             for (let x = 1; x < cx.length; x++) {
-                //let circle = ps[x];
                 lcs = lcs + "L" + cx[x] + "," + cy[x];
             }
             l1 = React.createElement(Path, {key:"p" + this.state.cnt, d:lcs, fill:"none", stroke:"green", strokeWidth:"4"})
             ps = React.createElement(Path, {key:"p" + this.state.cnt, d:lcs, fill:"none", stroke:"blue", strokeWidth:"4"})
         } else {
             ps=React.createElement(Circle,  {key:this.state.cnt, cx:x/2-40, cy:y/2-yoff, r:"2", stroke:"blue"}, "");
-        }
-        if (l1 != null) {
-            //ps = l1;
         }
 
         let vbox = "0 0 " + svgSize + " " + svgSize
@@ -134,10 +121,8 @@ export default class App extends React.Component {
         })
     }
     _handlePanResponderRelease = () => {
-      //  console.log('lines: ', this.state.lines)
         let l = this.state.lines.slice();
         l.push(this.state.ps);
-        console.log(this.state.ps);
         this.setState({
             lines: l,
             ps:[],
@@ -148,41 +133,21 @@ export default class App extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-          {/*<WebView*/}
-              {/*source={{html: '<html><head>\n' +*/}
-                  {/*'    <meta charset="UTF-8">\n' +*/}
-                  {/*'    <title>Grammatik</title>\n' +*/}
-                  {/*'</head>\n' +*/}
-                  {/*'<body>' +*/}
-                  {/*'<p>Hej</p> ' +*/}
-                  {/*'</body>'}}*/}
-              {/*style={{width: 290,backgroundColor: '#def'}}*/}
-          {/*>*/}
-
-          {/*</WebView>*/}
           <View {...this._panResponder.panHandlers} style={styles.svgs}>
-              {/*<TouchableOpacity*/}
-                  {/*onPressIn={(evt) => this.handlePress(evt)}*/}
-              {/*>*/}
               <View style = {styles.svg1}>
                   {this.state.svg1}
               </View>
               <View style = {this.state.showMaster ? styles.svg2: styles.svgHidden}>
-                  {this.state.svgMaster}
+                  <Kana width={svgSize} character = "ka"/>
+                  {/*{this.state.svgMaster}*/}
               </View>
-              {/*</TouchableOpacity>*/}
           </View>
-              {/*<Text>{ this.state.position.x }</Text>*/}
-              {/*<Text>{ this.state.position.y }</Text>*/}
-        {/*<Text>Changes you make will automatically reload.</Text>*/}
-        {/*<Text>Shake your phone to open the developer menu.</Text>*/}
           <View style = {styles.butt}>
               <Button color='#eee' title = "Reset" onPress = {(evt) => this.handleResetPress(evt)}/>
           </View>
           <View style = {styles.hideButt}>
               <Button color='#eee' title = "Show" onPress = {(evt) => this.handleHidePress(evt)}/>
           </View>
-          <Kana/>
       </View>
     );
   }
@@ -195,7 +160,6 @@ export default class App extends React.Component {
             cy: [],
             svg1: <Svg width={svgSize} height={svgSize} viewBox={"0 0 " + svgSize + " " + svgSize}/>,
         })
-//        this.forceUpdate();
     }
     handleHidePress(evt) {
         this.setState({
