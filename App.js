@@ -138,8 +138,7 @@ export default class App extends React.Component {
                   {this.state.svg1}
               </View>
               <View style = {this.state.showMaster ? styles.svg2: styles.svgHidden}>
-                  <Kana width={svgSize} character = "ka"/>
-                  {/*{this.state.svgMaster}*/}
+                  <Kana width={svgSize} character = "か"/>
               </View>
           </View>
           <View style = {styles.butt}>
