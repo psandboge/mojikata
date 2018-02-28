@@ -3,25 +3,27 @@ import { Button, Dimensions, PanResponder, StyleSheet, View } from 'react-native
 import Svg, {Circle, G, Path, Text as Txt} from 'react-native-svg';
 import Kana from "./components/Kana";
 
+const index = require("./assets/json/hiragana_index.json")
 const { width, height } = Dimensions.get('window');
 const svgSize = width*0.9
-const ypos = height/3
-const yoff = height/6
-const xoff = (width - svgSize)/2
-const xpos = xoff
+//const yoff = height/6
+//const xoff = (width - svgSize)/2
 export default class App extends React.Component {
     constructor () {
         super();
-        console.log("ypos " + ypos)
-        console.log("ypos " + yoff)
-        console.log("xpos " + xpos)
-        console.log("xpos " + xoff)
+//        console.log("yoff " + yoff)
+//        console.log("xoff " + xoff)
         console.log("width" + width)
         this.state = {
+            xoff: 0,
+            yoff: 0,
             ps: [],
             lines: [],
             cx: [],
             cy: [],
+            current: 0,
+            text: index[0][0],
+            glyph: index[0][1],
             cnt: 412,
             showMaster: false,
             svg1: <Svg width={svgSize} height={svgSize} viewBox={"0 0 " + svgSize + " " + svgSize}/>,
@@ -87,8 +89,8 @@ export default class App extends React.Component {
         let cy = this.state.cy;
         this.state.cnt += 1;
 
-        cx.push(x - xoff)//scale;
-        cy.push(y - yoff);
+        cx.push(x - this.state.xoff)//scale;
+        cy.push(y - this.state.yoff);
         if (ps.length > 35) {
             ps.splice(17,1);
             cx.splice(17,1);
@@ -104,7 +106,7 @@ export default class App extends React.Component {
             l1 = React.createElement(Path, {key:"p" + this.state.cnt, d:lcs, fill:"none", stroke:"green", strokeWidth:"4"})
             ps = React.createElement(Path, {key:"p" + this.state.cnt, d:lcs, fill:"none", stroke:"blue", strokeWidth:"4"})
         } else {
-            ps=React.createElement(Circle,  {key:this.state.cnt, cx:x/2-40, cy:y/2-yoff, r:"2", stroke:"blue"}, "");
+            ps=React.createElement(Circle,  {key:this.state.cnt, cx:x/2-this.state.xoff, cy:y/2-this.state.yoff, r:"2", stroke:"blue"}, "");
         }
 
         let vbox = "0 0 " + svgSize + " " + svgSize
@@ -131,21 +133,30 @@ export default class App extends React.Component {
         })
     }
   render() {
+      console.log("glyph: " + this.state.glyph)
     return (
       <View style={styles.container}>
-          <View {...this._panResponder.panHandlers} style={styles.svgs}>
+          <View onLayout = {(n) => this.getCoordinates(n)} {...this._panResponder.panHandlers} style={styles.svgs}>
               <View style = {styles.svg1}>
                   {this.state.svg1}
+                  <View style = {this.state.showMaster ? styles.svg2: styles.svgHidden}>
+                      <Kana width={svgSize} character = {this.state.glyph}/>
+                  </View>
               </View>
-              <View style = {this.state.showMaster ? styles.svg2: styles.svgHidden}>
-                  <Kana width={svgSize} character = "か"/>
-              </View>
+          </View>
+          <View style = {styles.brow}>
+          <View style = {styles.text}>
+              <Button color='#222' title = {this.state.text} onPress = {(evt) => {}}/>
           </View>
           <View style = {styles.butt}>
-              <Button color='#eee' title = "Reset" onPress = {(evt) => this.handleResetPress(evt)}/>
+              <Button color='#eee' title = "Rensa" onPress = {(evt) => this.handleResetPress(evt)}/>
+          </View>
+          <View style = {styles.nextButt}>
+              <Button color='#eee' title = "Nästa" onPress = {(evt) => this.handleNext(evt)}/>
           </View>
           <View style = {styles.hideButt}>
-              <Button color='#eee' title = "Show" onPress = {(evt) => this.handleHidePress(evt)}/>
+              <Button color='#eee' title = "Visa" onPress = {(evt) => this.handleHidePress(evt)}/>
+          </View>
           </View>
       </View>
     );
@@ -165,41 +176,87 @@ export default class App extends React.Component {
             showMaster: !(this.state.showMaster)
         })
     }
+
+    handleNext(evt) {
+        let next = (this.state.current + 1) % index.length
+        this.setState({
+            current: next,
+            text: index[next][0],
+            glyph: index[next][1],
+            ps: [],
+            lines: [],
+            cx: [],
+            cy: [],
+            svg1: <Svg width={svgSize} height={svgSize} viewBox={"0 0 " + svgSize + " " + svgSize}/>,
+        })
+        console.log("NextState: " + this.state)
+    }
+
+    getCoordinates(n) {
+        console.log("Coordinates:  " + n.nativeEvent.layout.y)
+        this.setState({
+            xoff: n.nativeEvent.layout.x,
+            yoff: n.nativeEvent.layout.y
+        })
+    }
 }
 
 const styles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-      top:0,
-      left:0,
-      height:height,
-      width:width,
-    backgroundColor: '#000',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+    container: {
+//    position: 'absolute',
+        flex: 1,
+//      top:0,
+//      left:0,
+//        height:height,
+//      width:width,
+        backgroundColor: '#000',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    brow: {
+        backgroundColor: '#000',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: "row"
+    },
+    text: {
+        margin: 3,
+        // position: 'absolute',
+        // top:height/1.5 -40,
+        // left:width/8,
+        backgroundColor: '#ee0',
+    },
     butt: {
-        position: 'absolute',
-        top:height/1.5,
-        left:width/8,
+        margin: 3,
+        // position: 'absolute',
+        // top:height/1.5,
+        // left:width/8,
         backgroundColor: '#b23',
     },
     hideButt: {
-        position: 'absolute',
-        top:height/1.5,
-        right:width/8,
+        margin: 3,
+        // position: 'absolute',
+        // top:height/1.5,
+        // right:width/8,
+        backgroundColor: '#b23',
+    },
+    nextButt: {
+        margin: 3,
+        // position: 'absolute',
+        // top:height/1.5,
+        // right:width/8*3,
         backgroundColor: '#b23',
     },
     svgs: {
-        position:'absolute',
-        top:yoff,
-        left:xoff,
+        // position:'absolute',
+        // top:yoff,
+        // left:xoff,
         backgroundColor: '#fff',
     },
     svg1: {
-        position:'absolute',
-        top:0,
-        left:0,
+//        position:'absolute',
+//        top:0,
+//        left:0,
         backgroundColor: '#eeb',
 
         transform: [
