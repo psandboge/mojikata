@@ -1,5 +1,5 @@
 import React from 'react';
-import {Button, Dimensions, PanResponder, StyleSheet, View} from 'react-native';
+import {Button, Dimensions, PanResponder, StyleSheet, View, SafeAreaView} from 'react-native';
 import Svg, {Circle, Path} from 'react-native-svg';
 import Kana from "./components/Kana";
 
@@ -9,7 +9,6 @@ const svgSize = width < height ? width * 0.9 : height * 0.9;
 export default class App extends React.Component {
     constructor() {
         super();
-        console.log("width" + width);
         this.state = {
             xoff: 0,
             yoff: 0,
@@ -110,33 +109,35 @@ export default class App extends React.Component {
     };
 
     render() {
-        console.log("glyph: " + this.state.glyph);
         return (
-            <View style={styles.container}>
-                <View onLayout={(n) => this.getCoordinates(n)} {...this._panResponder.panHandlers} style={styles.svgs}>
-                    <View style={styles.svg1}>
-                        {this.state.svg1}
-                        <View style={this.state.showMaster ? styles.svg2 : styles.svgHidden}>
-                            <Kana width={svgSize} character={this.state.glyph}/>
+            <SafeAreaView style={styles.safeContainer}>
+                <View style={styles.container}>
+                    <View onLayout={(n) => this.getCoordinates(n)} {...this._panResponder.panHandlers}
+                          style={styles.svgs}>
+                        <View style={styles.svg1}>
+                            {this.state.svg1}
+                            <View style={this.state.showMaster ? styles.svg2 : styles.svgHidden}>
+                                <Kana width={svgSize} character={this.state.glyph}/>
+                            </View>
+                        </View>
+                    </View>
+                    <View style={styles.brow}>
+                        <View style={styles.text}>
+                            <Button color='#222' title={this.state.text} onPress={(evt) => {
+                            }}/>
+                        </View>
+                        <View style={styles.butt}>
+                            <Button color='#eee' title="Rensa" onPress={(evt) => this.handleResetPress(evt)}/>
+                        </View>
+                        <View style={styles.nextButt}>
+                            <Button color='#eee' title="Nästa" onPress={(evt) => this.handleNext(evt)}/>
+                        </View>
+                        <View style={styles.hideButt}>
+                            <Button color='#eee' title="Visa" onPress={(evt) => this.handleHidePress(evt)}/>
                         </View>
                     </View>
                 </View>
-                <View style={styles.brow}>
-                    <View style={styles.text}>
-                        <Button color='#222' title={this.state.text} onPress={(evt) => {
-                        }}/>
-                    </View>
-                    <View style={styles.butt}>
-                        <Button color='#eee' title="Rensa" onPress={(evt) => this.handleResetPress(evt)}/>
-                    </View>
-                    <View style={styles.nextButt}>
-                        <Button color='#eee' title="Nästa" onPress={(evt) => this.handleNext(evt)}/>
-                    </View>
-                    <View style={styles.hideButt}>
-                        <Button color='#eee' title="Visa" onPress={(evt) => this.handleHidePress(evt)}/>
-                    </View>
-                </View>
-            </View>
+            </SafeAreaView>
         );
     }
 
@@ -168,11 +169,9 @@ export default class App extends React.Component {
             cy: [],
             svg1: <Svg width={svgSize} height={svgSize} viewBox={"0 0 " + svgSize + " " + svgSize}/>,
         });
-        console.log("NextState: " + this.state)
     }
 
     getCoordinates(n) {
-        console.log("Coordinates:  " + n.nativeEvent.layout.y);
         this.setState({
             xoff: n.nativeEvent.layout.x,
             yoff: n.nativeEvent.layout.y
@@ -181,11 +180,17 @@ export default class App extends React.Component {
 }
 
 const styles = StyleSheet.create({
+    safeContainer: {
+        flex: 1,
+        backgroundColor: '#e5a',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+    },
     container: {
         flex: 1,
         backgroundColor: '#000',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
     },
     brow: {
         backgroundColor: '#000',
@@ -210,6 +215,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#b23',
     },
     svgs: {
+        alignContent: 'flex-start',
         backgroundColor: '#fff',
     },
     svg1: {

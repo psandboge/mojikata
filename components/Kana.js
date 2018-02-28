@@ -12,7 +12,6 @@ export default class Kana extends React.Component {
             texts: [],
         };
         svgSize = props.width;
-        console.log(svgSize);
         this.getSvg(props);
     }
 
@@ -20,7 +19,6 @@ export default class Kana extends React.Component {
         this.state.lines = [];
         this.state.texts = [];
         let character = chars.hiragana[props.character];
-        console.log("Char: " + character);
         let paths = character.path;
         let texts = character.text;
         for (let i = 0; i < paths.length; i++) {
@@ -48,7 +46,6 @@ export default class Kana extends React.Component {
     }
 
     componentWillUpdate(nextProps, nextState) {
-        console.log("next:" + nextProps.character);
         this.getSvg(nextProps)
     }
 
