@@ -1,11 +1,13 @@
 import React from 'react';
-import {Button, Dimensions, PanResponder, StyleSheet, View, SafeAreaView} from 'react-native';
+import {Button, Dimensions, PanResponder, StyleSheet, View, SafeAreaView, ImageBackground, Image} from 'react-native';
 import Svg, {Circle, Path} from 'react-native-svg';
 import Kana from "./components/Kana";
 
 const index = require("./assets/json/hiragana_index.json");
 const {width, height} = Dimensions.get('window');
-const svgSize = width < height ? width * 0.9 : height * 0.9;
+const svgSize = width < height ? width * 0.9 : height * 0.95;
+const img = require("./assets/images/japanese_house.png");
+const img2 = require("./assets/images/sky.png");
 export default class App extends React.Component {
     constructor() {
         super();
@@ -43,6 +45,7 @@ export default class App extends React.Component {
         let ps = this.state.ps;
         let cx = this.state.cx;
         let cy = this.state.cy;
+        let cLength = cx.length;
         this.state.cnt += 1;
 
         cx.push(x - this.state.xoff);
@@ -54,11 +57,12 @@ export default class App extends React.Component {
         }
 
         let l1 = null;
-        if (cx.length > 1) {
+        if (cLength > 1) {
             let lcs = "M" + (cx[0]) + "," + (cy[0]);
             for (let x = 1; x < cx.length; x++) {
                 lcs = lcs + "L" + cx[x] + "," + cy[x];
             }
+//            if (cLength % 2) {
             l1 = React.createElement(Path, {
                 key: "p" + this.state.cnt,
                 d: lcs,
@@ -73,6 +77,7 @@ export default class App extends React.Component {
                 stroke: "blue",
                 strokeWidth: "4"
             });
+//            }
         } else {
             ps = React.createElement(Circle, {
                 key: this.state.cnt,
@@ -87,14 +92,12 @@ export default class App extends React.Component {
         let newSvg = React.createElement(Svg, {width: svgSize, height: svgSize, viewBox: vbox},
             this.state.lines.concat(l1));
 
+//        if (cLength % 2) {
         this.setState({
             svg1: newSvg,
-            position: {
-                x: gestureState.moveX,
-                y: gestureState.moveY
-            },
             ps: ps
         });
+//        }
     }
 
     _handlePanResponderRelease = () => {
@@ -111,31 +114,40 @@ export default class App extends React.Component {
     render() {
         return (
             <SafeAreaView style={styles.safeContainer}>
-                <View style={styles.container}>
-                    <View onLayout={(n) => this.getCoordinates(n)} {...this._panResponder.panHandlers}
-                          style={styles.svgs}>
-                        <View style={styles.svg1}>
-                            {this.state.svg1}
-                            <View style={this.state.showMaster ? styles.svg2 : styles.svgHidden}>
-                                <Kana width={svgSize} character={this.state.glyph}/>
+                <Image style={styles.headerContainer} source={img2}/>
+                <View onLayout={(n) => this.getCoordinates(n)} style={styles.container}>
+                    <ImageBackground
+                        source={img}
+                        style={styles.imageContainer}
+                        imageStyle={styles.image}>
+                        <View {...this._panResponder.panHandlers}
+                              style={styles.svgs}>
+                            <View style={styles.svg1}>
+                                {this.state.svg1}
+                                <View style={this.state.showMaster ? styles.svg2 : styles.svgHidden}>
+                                    <Kana width={svgSize} character={this.state.glyph}/>
+                                </View>
                             </View>
                         </View>
-                    </View>
-                    <View style={styles.brow}>
-                        <View style={styles.text}>
-                            <Button color='#222' title={this.state.text} onPress={(evt) => {
-                            }}/>
+                        <View style={styles.brow}>
+                            <View style={styles.text}>
+                                <Button color='#222' title={this.state.text} onPress={(evt) => {
+                                }}/>
+                            </View>
+                            <View style={styles.butt}>
+                                <Button color='#eee' title="Rensa" onPress={(evt) => this.handleResetPress(evt)}/>
+                            </View>
+                            <View style={styles.nextButt}>
+                                <Button color='#eee' title="Nästa" onPress={(evt) => this.handleNext(evt)}/>
+                            </View>
+                            <View style={styles.hideButt}>
+                                <Button color='#eee' title="Visa" onPress={(evt) => this.handleHidePress(evt)}/>
+                            </View>
+                            <View style={styles.undoButt}>
+                                <Button color='#eee' title="Ångra" onPress={(evt) => this.handleUndo(evt)}/>
+                            </View>
                         </View>
-                        <View style={styles.butt}>
-                            <Button color='#eee' title="Rensa" onPress={(evt) => this.handleResetPress(evt)}/>
-                        </View>
-                        <View style={styles.nextButt}>
-                            <Button color='#eee' title="Nästa" onPress={(evt) => this.handleNext(evt)}/>
-                        </View>
-                        <View style={styles.hideButt}>
-                            <Button color='#eee' title="Visa" onPress={(evt) => this.handleHidePress(evt)}/>
-                        </View>
-                    </View>
+                    </ImageBackground>
                 </View>
             </SafeAreaView>
         );
@@ -177,23 +189,57 @@ export default class App extends React.Component {
             yoff: n.nativeEvent.layout.y
         })
     }
+
+    handleUndo(evt) {
+        let len = this.state.lines.length;
+        if (len > 0) {
+            let l = this.state.lines.slice(0, len - 1);
+
+            let vbox = "0 0 " + svgSize + " " + svgSize;
+            let newSvg = React.createElement(Svg, {width: svgSize, height: svgSize, viewBox: vbox}, l);
+
+            this.setState({
+                svg1: newSvg,
+                lines: l,
+                ps: [],
+                cx: [],
+                cy: []
+            });
+        }
+    }
 }
 
 const styles = StyleSheet.create({
+    imageContainer: {
+        flex: 1,
+    },
+    headerContainer: {
+        backgroundColor: '#bbb',
+        alignItems: 'center',
+        alignSelf: 'stretch',
+        width: null,
+        height: 50
+    },
+    image: {
+        flex: 1,
+        width: null,
+        height: null, resizeMode: 'cover',
+    },
     safeContainer: {
         flex: 1,
-        backgroundColor: '#e5a',
+        backgroundColor: '#aaa',
         alignItems: 'center',
         justifyContent: 'flex-start',
     },
     container: {
         flex: 1,
         backgroundColor: '#000',
+//        backgroundImage: './assets/images/japanese_house.png',
         alignItems: 'center',
         justifyContent: 'flex-start',
     },
     brow: {
-        backgroundColor: '#000',
+        backgroundColor: '#0000',
         alignItems: 'center',
         justifyContent: 'center',
         flexDirection: "row"
@@ -209,6 +255,10 @@ const styles = StyleSheet.create({
     hideButt: {
         margin: 3,
         backgroundColor: '#b23',
+    },
+    undoButt: {
+        margin: 3,
+        backgroundColor: '#32b',
     },
     nextButt: {
         margin: 3,
