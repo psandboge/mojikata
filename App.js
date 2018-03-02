@@ -1,5 +1,16 @@
 import React from 'react';
-import {Button, Dimensions, PanResponder, StyleSheet, View, SafeAreaView, ImageBackground, Image} from 'react-native';
+import {
+    Button,
+    Dimensions,
+    PanResponder,
+    StyleSheet,
+    View,
+    SafeAreaView,
+    ImageBackground,
+    Image,
+    Text,
+    AsyncStorage
+} from 'react-native';
 import Svg, {Circle, Path} from 'react-native-svg';
 import Kana from "./components/Kana";
 
@@ -114,7 +125,9 @@ export default class App extends React.Component {
     render() {
         return (
             <SafeAreaView style={styles.safeContainer}>
-                <Image style={styles.headerContainer} source={img2}/>
+                <ImageBackground style={styles.headerContainer} source={img2}>
+                    <Text style={styles.title}>文字方</Text>
+                </ImageBackground>
                 <View onLayout={(n) => this.getCoordinates(n)} style={styles.container}>
                     <ImageBackground
                         source={img}
@@ -147,6 +160,14 @@ export default class App extends React.Component {
                                 <Button color='#eee' title="Ångra" onPress={(evt) => this.handleUndo(evt)}/>
                             </View>
                         </View>
+                        <View style={styles.brow}>
+                            <View style={this.state.showMaster ? styles.okButt : styles.okButtHidden}>
+                                <Button color='#eee' title="Rätt" onPress={(evt) => this.handleOk(evt)}/>
+                            </View>
+                            <View style={this.state.showMaster ? styles.wrongButt : styles.wrongButtHidden}>
+                                <Button color='#eee' title="Fel" onPress={(evt) => this.handleWrong(evt)}/>
+                            </View>
+                        </View>
                     </ImageBackground>
                 </View>
             </SafeAreaView>
@@ -172,6 +193,7 @@ export default class App extends React.Component {
     handleNext(evt) {
         let next = (this.state.current + 1) % index.length;
         this.setState({
+            showMaster: false,
             current: next,
             text: index[next][0],
             glyph: index[next][1],
@@ -207,9 +229,31 @@ export default class App extends React.Component {
             });
         }
     }
+
+    handleOk(evt) {
+        this.persistDrawing(true);
+        this.handleNext(evt);
+    }
+
+    async persistDrawing(b) {
+        AsyncStorage.mergeItem("@MojiKataStore:results", JSON.stringify({correct: b, lines: this.state.lines}))
+        const val = await AsyncStorage.getItem('@MojiKataStore:results');
+        console.log(val);
+    }
+
+    handleWrong(evt) {
+        this.persistDrawing(false);
+        this.handleNext(evt);
+    }
 }
 
 const styles = StyleSheet.create({
+    title: {
+        fontWeight: 'bold',
+        color: '#ddd',
+        fontSize: 45,
+        backgroundColor: '#fff2',
+    },
     imageContainer: {
         flex: 1,
     },
@@ -263,6 +307,42 @@ const styles = StyleSheet.create({
     nextButt: {
         margin: 3,
         backgroundColor: '#b23',
+    },
+    okButt: {
+        margin: 3,
+        backgroundColor: '#1b2',
+    },
+    wrongButt: {
+        margin: 3,
+        backgroundColor: '#d12',
+    },
+    okButtHidden: {
+        margin: 3,
+        backgroundColor: '#1b2',
+        transform: [
+            {
+                scale: 1
+            },
+            {
+                translateX: -1000
+            },
+            {translateY: 0}
+
+        ]
+    },
+    wrongButtHidden: {
+        margin: 3,
+        backgroundColor: '#d12',
+        transform: [
+            {
+                scale: 1
+            },
+            {
+                translateX: -1000
+            },
+            {translateY: 0}
+
+        ]
     },
     svgs: {
         alignContent: 'flex-start',
