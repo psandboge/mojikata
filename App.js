@@ -32,6 +32,7 @@ export default class App extends React.Component {
             current: 0,
             text: index[0][0],
             glyph: index[0][1],
+            strokes: index[0][2],
             cnt: 412,
             showMaster: false,
             svg1: <Svg width={svgSize} height={svgSize} viewBox={"0 0 " + svgSize + " " + svgSize}/>,
@@ -112,14 +113,23 @@ export default class App extends React.Component {
     }
 
     _handlePanResponderRelease = () => {
-        let l = this.state.lines.slice();
-        l.push(this.state.ps);
-        this.setState({
-            lines: l,
-            ps: [],
-            cx: [],
-            cy: []
-        });
+            let l = this.state.lines.slice();
+            l.push(this.state.ps);
+        if (l.length < this.state.strokes) {
+            this.setState({
+                lines: l,
+                ps: [],
+                cx: [],
+                cy: []
+            });
+        } else {
+            this.state.lines = l;
+            this.persistResult(true);
+            this.setState({
+                lines: l,
+                showMaster:true
+            });
+        }
     };
 
     render() {
@@ -197,6 +207,7 @@ export default class App extends React.Component {
             current: next,
             text: index[next][0],
             glyph: index[next][1],
+            strokes: index[next][2],
             ps: [],
             lines: [],
             cx: [],
@@ -231,18 +242,18 @@ export default class App extends React.Component {
     }
 
     handleOk(evt) {
-        this.persistDrawing(true);
+        this.persistResult(true);
         this.handleNext(evt);
     }
 
-    async persistDrawing(b) {
+    async persistResult(b) {
         AsyncStorage.mergeItem("@MojiKataStore:results", JSON.stringify({correct: b, lines: this.state.lines}))
         const val = await AsyncStorage.getItem('@MojiKataStore:results');
         console.log(val);
     }
 
     handleWrong(evt) {
-        this.persistDrawing(false);
+        this.persistResult(false);
         this.handleNext(evt);
     }
 }
