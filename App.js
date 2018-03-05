@@ -11,7 +11,7 @@ import {
     Text,
     AsyncStorage
 } from 'react-native';
-import Svg, {Circle, Path} from 'react-native-svg';
+import Svg, {Path} from 'react-native-svg';
 import Kana from "./components/Kana";
 
 const index = require("./assets/json/hiragana_index.json");
@@ -23,6 +23,7 @@ export default class App extends React.Component {
     constructor() {
         super();
         this.state = {
+            done: false,
             xoff: 0,
             yoff: 0,
             ps: [],
@@ -49,8 +50,8 @@ export default class App extends React.Component {
             onPanResponderRelease: this._handlePanResponderRelease
         });
     }
-
     _handlePanResponderMove(evt, gestureState) {
+        if (this.state.done) return;
         let x = gestureState.moveX;
         let y = gestureState.moveY;
 
@@ -90,14 +91,14 @@ export default class App extends React.Component {
                 strokeWidth: "4"
             });
 //            }
-        } else {
-            ps = React.createElement(Circle, {
-                key: this.state.cnt,
-                cx: x / 2 - this.state.xoff,
-                cy: y / 2 - this.state.yoff,
-                r: "2",
-                stroke: "blue"
-            }, "");
+//        } else {
+            // ps = React.createElement(Circle, {
+            //     key: this.state.cnt,
+            //     cx: x / 2 - this.state.xoff,
+            //     cy: y / 2 - this.state.yoff,
+            //     r: "2",
+            //     stroke: "blue"
+            // }, "");
         }
 
         let vbox = "0 0 " + svgSize + " " + svgSize;
@@ -126,6 +127,7 @@ export default class App extends React.Component {
             this.state.lines = l;
             this.persistResult(true);
             this.setState({
+                done: true,
                 lines: l,
                 showMaster:true
             });
@@ -147,7 +149,7 @@ export default class App extends React.Component {
                               style={styles.svgs}>
                             <View style={styles.svg1}>
                                 {this.state.svg1}
-                                <View style={this.state.showMaster ? styles.svg2 : styles.svgHidden}>
+                                <View style={this.state.showMaster ? styles.svgShow : styles.svgHidden}>
                                     <Kana width={svgSize} character={this.state.glyph}/>
                                 </View>
                             </View>
@@ -186,6 +188,7 @@ export default class App extends React.Component {
 
     handleResetPress(evt) {
         this.setState({
+            done: false,
             ps: [],
             lines: [],
             cx: [],
@@ -203,6 +206,7 @@ export default class App extends React.Component {
     handleNext(evt) {
         let next = (this.state.current + 1) % index.length;
         this.setState({
+            done: false,
             showMaster: false,
             current: next,
             text: index[next][0],
@@ -232,6 +236,7 @@ export default class App extends React.Component {
             let newSvg = React.createElement(Svg, {width: svgSize, height: svgSize, viewBox: vbox}, l);
 
             this.setState({
+                done: false,
                 svg1: newSvg,
                 lines: l,
                 ps: [],
@@ -373,7 +378,7 @@ const styles = StyleSheet.create({
 
         ]
     },
-    svg2: {
+    svgShow: {
         position: 'absolute',
         top: 0,
         left: 0,
