@@ -9,7 +9,8 @@ import {
     ImageBackground,
     Image,
     Text,
-    AsyncStorage
+    AsyncStorage,
+    Platform
 } from 'react-native';
 import Svg, {Path} from 'react-native-svg';
 import Kana from "./components/Kana";
@@ -90,27 +91,16 @@ export default class App extends React.Component {
                 stroke: "blue",
                 strokeWidth: "4"
             });
-//            }
-//        } else {
-            // ps = React.createElement(Circle, {
-            //     key: this.state.cnt,
-            //     cx: x / 2 - this.state.xoff,
-            //     cy: y / 2 - this.state.yoff,
-            //     r: "2",
-            //     stroke: "blue"
-            // }, "");
         }
 
         let vbox = "0 0 " + svgSize + " " + svgSize;
         let newSvg = React.createElement(Svg, {width: svgSize, height: svgSize, viewBox: vbox},
             this.state.lines.concat(l1));
 
-//        if (cLength % 2) {
         this.setState({
             svg1: newSvg,
             ps: ps
         });
-//        }
     }
 
     _handlePanResponderRelease = () => {
@@ -125,7 +115,6 @@ export default class App extends React.Component {
             });
         } else {
             this.state.lines = l;
-            this.persistResult(true);
             this.setState({
                 done: true,
                 lines: l,
@@ -155,29 +144,33 @@ export default class App extends React.Component {
                             </View>
                         </View>
                         <View style={styles.brow}>
-                            <View style={styles.text}>
-                                <Button color='#222' title={this.state.text} onPress={(evt) => {
-                                }}/>
-                            </View>
                             <View style={styles.butt}>
-                                <Button color='#eee' title="Rensa" onPress={(evt) => this.handleResetPress(evt)}/>
+                                <Button color={Platform.OS === 'ios' ?'#eee':'#b23'} title="Rensa" onPress={(evt) => this.handleResetPress(evt)}/>
                             </View>
                             <View style={styles.nextButt}>
-                                <Button color='#eee' title="Nästa" onPress={(evt) => this.handleNext(evt)}/>
+                                <Button color={Platform.OS === 'ios' ?'#eee':'#b23'} title="Nästa" onPress={(evt) => this.handleNext(evt)}/>
                             </View>
                             <View style={styles.hideButt}>
-                                <Button color='#eee' title="Visa" onPress={(evt) => this.handleHidePress(evt)}/>
+                                <Button color={Platform.OS === 'ios' ?'#eee':'#b23'} title="Visa" onPress={(evt) => this.handleHidePress(evt)}/>
                             </View>
                             <View style={styles.undoButt}>
-                                <Button color='#eee' title="Ångra" onPress={(evt) => this.handleUndo(evt)}/>
+                                <Button color={Platform.OS === 'ios' ?'#eee':'#32b'} title="Ångra" onPress={(evt) => this.handleUndo(evt)}/>
                             </View>
                         </View>
                         <View style={styles.brow}>
                             <View style={this.state.showMaster ? styles.okButt : styles.okButtHidden}>
-                                <Button color='#eee' title="Rätt" onPress={(evt) => this.handleOk(evt)}/>
+                                <Button color={Platform.OS === 'ios' ?'#eee':'#1b2'} title="Rätt" onPress={(evt) => this.handleOk(evt)}/>
                             </View>
                             <View style={this.state.showMaster ? styles.wrongButt : styles.wrongButtHidden}>
-                                <Button color='#eee' title="Fel" onPress={(evt) => this.handleWrong(evt)}/>
+                                <Button color={Platform.OS === 'ios' ?'#eee':'#d12'} title="Fel" onPress={(evt) => this.handleWrong(evt)}/>
+                            </View>
+                            <View style={this.state.showMaster ? styles.replayButt : styles.replayButtHidden}>
+                                <Button color={Platform.OS === 'ios' ?'#eee':'#152'} title="Historik" onPress={(evt) => this.handleReplay(evt)}/>
+                            </View>
+                        </View>
+                        <View style={styles.brow}>
+                            <View>
+                                <Text style={styles.text}>{this.state.text}</Text>
                             </View>
                         </View>
                     </ImageBackground>
@@ -189,6 +182,7 @@ export default class App extends React.Component {
     handleResetPress(evt) {
         this.setState({
             done: false,
+            showMaster: false,
             ps: [],
             lines: [],
             cx: [],
@@ -246,20 +240,36 @@ export default class App extends React.Component {
         }
     }
 
-    handleOk(evt) {
-        this.persistResult(true);
+    async handleOk(evt) {
+        await this.persistResult(true);
         this.handleNext(evt);
     }
 
     async persistResult(b) {
-        AsyncStorage.mergeItem("@MojiKataStore:results", JSON.stringify({correct: b, lines: this.state.lines}))
-        const val = await AsyncStorage.getItem('@MojiKataStore:results');
-        console.log(val);
+        const glyph = this.state.glyph;
+        const item = '@MojiKataStore:' + glyph;
+        //await AsyncStorage.removeItem(item);
+        let value = await AsyncStorage.getItem(item);
+        if (value === null) {
+            await AsyncStorage.setItem(item, "[]");
+            value = await AsyncStorage.getItem(item);
+        }
+        let json = JSON.parse(value);
+        if (value === "[]") {
+            newVal = '[' + JSON.stringify({correct: b, lines: this.state.lines}) + ']';
+            console.log("New value" + newVal);
+            await AsyncStorage.setItem(item, newVal);
+        } else {
+            console.log("Append")
+            let l = json.concat({correct: b, lines: this.state.lines});
+            await AsyncStorage.setItem(item, JSON.stringify(l));
+        }
+        const val = await AsyncStorage.getItem(item);
     }
 
-    handleWrong(evt) {
-        this.persistResult(false);
-        this.handleNext(evt);
+    async handleWrong(evt) {
+        await this.persistResult(false);
+        this.handleResetPress(evt);
     }
 }
 
@@ -306,7 +316,13 @@ const styles = StyleSheet.create({
     },
     text: {
         margin: 3,
-        backgroundColor: '#ee0',
+        backgroundColor: '#eee2',
+        fontWeight: 'bold',
+        color: '#ed3',
+        fontSize: 145,
+        textShadowColor: '#4448',
+        textShadowRadius: 3,
+        textShadowOffset: {width: 3, height: 3},
     },
     butt: {
         margin: 3,
@@ -332,6 +348,10 @@ const styles = StyleSheet.create({
         margin: 3,
         backgroundColor: '#d12',
     },
+    replayButt: {
+        margin: 3,
+        backgroundColor: '#152',
+    },
     okButtHidden: {
         margin: 3,
         backgroundColor: '#1b2',
@@ -349,6 +369,20 @@ const styles = StyleSheet.create({
     wrongButtHidden: {
         margin: 3,
         backgroundColor: '#d12',
+        transform: [
+            {
+                scale: 1
+            },
+            {
+                translateX: -1000
+            },
+            {translateY: 0}
+
+        ]
+    },
+    replayButtHidden: {
+        margin: 3,
+        backgroundColor: '#152',
         transform: [
             {
                 scale: 1
