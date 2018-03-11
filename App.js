@@ -76,7 +76,6 @@ export default class App extends React.Component {
             for (let x = 1; x < cx.length; x++) {
                 lcs = lcs + "L" + cx[x] + "," + cy[x];
             }
-//            if (cLength % 2) {
             l1 = React.createElement(Path, {
                 key: "p" + this.state.cnt,
                 d: lcs,
@@ -256,15 +255,14 @@ export default class App extends React.Component {
         }
         let json = JSON.parse(value);
         if (value === "[]") {
-            newVal = '[' + JSON.stringify({correct: b, lines: this.state.lines}) + ']';
+            let newVal = '[' + JSON.stringify({correct: b, lines: this.state.lines}) + ']';
             console.log("New value" + newVal);
-            await AsyncStorage.setItem(item, newVal);
+            AsyncStorage.setItem(item, newVal);
         } else {
-            console.log("Append")
+            console.log("Append");
             let l = json.concat({correct: b, lines: this.state.lines});
-            await AsyncStorage.setItem(item, JSON.stringify(l));
+            AsyncStorage.setItem(item, JSON.stringify(l));
         }
-        const val = await AsyncStorage.getItem(item);
     }
 
     async handleWrong(evt) {
