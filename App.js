@@ -167,7 +167,7 @@ export default class App extends React.Component {
                                 <Button color={Platform.OS === 'ios' ?'#eee':'#152'} title="Historik" onPress={(evt) => this.handleReplay(evt)}/>
                             </View>
                         </View>
-                        <View style={styles.brow}>
+                        <View style={styles.task}>
                             <View>
                                 <Text style={styles.text}>{this.state.text}</Text>
                             </View>
@@ -310,14 +310,21 @@ const styles = StyleSheet.create({
         backgroundColor: '#0000',
         alignItems: 'center',
         justifyContent: 'center',
-        flexDirection: "row"
+        flexDirection: "row",
+        zIndex: 30,
+    },
+    task: {
+        backgroundColor: '#0000',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        marginTop: -40,
     },
     text: {
         margin: 3,
         backgroundColor: '#eee2',
         fontWeight: 'bold',
         color: '#ed3',
-        fontSize: 145,
+        fontSize: 135,
         textShadowColor: '#4448',
         textShadowRadius: 3,
         textShadowOffset: {width: 3, height: 3},
